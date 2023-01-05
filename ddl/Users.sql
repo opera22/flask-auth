@@ -1,0 +1,7 @@
+CREATE TABLE "Users" (
+	"userid"	INTEGER NOT NULL,
+	"username"	TEXT NOT NULL UNIQUE,
+	"password"	TEXT NOT NULL,
+	"salt"	TEXT NOT NULL,
+	PRIMARY KEY("userid" AUTOINCREMENT)
+);
