@@ -5,6 +5,8 @@ import sqlite3
 class Database:
     def __init__(self, name):
         self._conn = sqlite3.connect(name)
+        # I added this to enforce FK constraints upon connection -opera22
+        self._conn.execute('PRAGMA foreign_keys = ON')
         self._cursor = self._conn.cursor()
 
     def __enter__(self):

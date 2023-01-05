@@ -13,25 +13,25 @@ JWT_SIGNING_KEY = os.environ.get('JWT_SIGNING_KEY')
 
 @app.route('/', methods=['GET'])
 def index():
-    return jsonify(status=200, message="You hit the root / path")
+    return jsonify(status=200, message='You hit the root / path')
 
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.json
-    if data != None and "username" in data and "password" in data:
-        response = db_service.create_user(data["username"], data["password"])
+    if data != None and 'username' in data and 'password' in data:
+        response = db_service.create_user(data['username'], data['password'])
         return jsonify(status=200, message=response)
     else:
-        return jsonify(status=400, message="Invalid parameters")
+        return jsonify(status=400, message='Invalid parameters')
 
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    if data != None and "username" in data and "password" in data:
-        response = db_service.login(data["username"], data["password"])
+    if data != None and 'username' in data and 'password' in data:
+        response = db_service.login(data['username'], data['password'])
         return jsonify(status=200, message=response)
     else:
-        return jsonify(status=400, message="Invalid parameters")
+        return jsonify(status=400, message='Invalid POST body')
 
 @app.route('/logout', methods=['GET'])
 def logout():
@@ -40,16 +40,32 @@ def logout():
 @app.route('/post', methods=['POST'])
 @token_required
 def create_post(userid):
-    print(f"USER ID: {userid}")
-    return jsonify(status=200, message=userid)
+    data = request.json
+    if data != None and 'content' in data:
+        response = db_service.create_post(userid, data['content'])
+        return jsonify(status=200, message=response)
+    else:
+        return jsonify(status=400, message='Invalid POST body')
 
 @app.route('/post', methods=['GET'])
 def get_post():
     pass
 
+@app.route('/follow', methods=['POST'])
+@token_required
+def add_follow(follower):
+    data = request.json
+    if data != None and 'followee' in data:
+        response = db_service.add_follow(follower, data['followee'])
+        return jsonify(status=200, message=response)
+    else:
+        return jsonify(status=400, message='Invalid POST body')
+
 @app.route('/timeline', methods=['GET'])
-def get_timeline(user):
-    pass
+@token_required
+def get_timeline(userid):
+    response = db_service.get_timeline(userid)
+    return jsonify(status=200, message=response)
 
 @app.route('/:username', methods=['GET'])
 def get_posts_by_user():

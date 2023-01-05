@@ -5,6 +5,7 @@ import os
 from helpers.Database import Database
 from helpers.exceptions import *
 from flask import abort
+from datetime import datetime
 
 class DBService:
     def __init__(self, db_name):
@@ -46,12 +47,40 @@ class DBService:
         }
 
     def create_post(self, userid, content):
-        pass
+        created_at = datetime.utcnow()
+        with Database(self.db_name) as db:
+            try:
+                db.execute("""
+                    INSERT INTO Posts (userid, content, created_at) VALUES (?, ?, ?)
+                """, (userid, content, created_at))
+            except:
+                abort(500, 'Unknown database error')
+        return 'Created post'
 
-    def get_post(self, postid):
-        pass
+    def add_follow(self, follower, followee):
+        if follower == followee:
+            abort(400, "You can't follow yourself")
+        with Database(self.db_name) as db:
+            try:
+                db.execute("""
+                    INSERT INTO Follows (follower, followee) VALUES (?, ?)
+                """, (follower, followee))
+            except sqlite3.IntegrityError:
+                abort(400, "You already follow this user or they don't exist")
+        return f'Added {follower} as a follower to {followee}'
 
     def get_timeline(self, userid):
+        with Database(self.db_name) as db:
+            db.execute("""
+                SELECT * FROM Posts p
+                LEFT JOIN Follows f
+                    ON f.followee = p.userid
+                WHERE f.follower = ?
+            """, (userid,))
+            response = db.fetchall()
+        return response
+
+    def get_post(self, postid):
         pass
 
     def get_posts_by_user(self, userid):
