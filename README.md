@@ -23,7 +23,7 @@ The first step, which at this point is completely unprotected, is to create an a
 }
 ```
 
-This step returns nothing to the user except a 200 Successful status. A user is created in the Users table.
+This step returns nothing to the user except a 200 Successful status, assuming the username is available (UNIQUE constraint on the Users table). A user is created in the Users table.
 
 Next, the user logs in with those same credentials at the `/login` route:
 ```json

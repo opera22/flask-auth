@@ -2,7 +2,7 @@ import bcrypt
 import sqlite3
 import jwt
 import os
-from helpers.Database import Database
+from helpers.db_context_manager import DatabaseCM
 from helpers.exceptions import *
 from flask import abort
 from datetime import datetime
@@ -17,7 +17,7 @@ class DBService:
     def create_user(self, username, password):
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password.encode('ascii'), salt)
-        with Database(self.db_name) as db:
+        with DatabaseCM(self.db_name) as db:
             try:
                 db.execute("""
                     INSERT INTO Users (username, password, salt) VALUES (?, ?, ?)
@@ -28,7 +28,7 @@ class DBService:
 
     def login(self, username, password):
         # NOTE: For optimized performance, the username column should be indexed
-        with Database(self.db_name) as db:
+        with DatabaseCM(self.db_name) as db:
             db.execute("""
                 SELECT * FROM Users WHERE username = ?
             """, (username,))
@@ -53,7 +53,7 @@ class DBService:
 
     def create_post(self, userid, content):
         created_at = datetime.utcnow()
-        with Database(self.db_name) as db:
+        with DatabaseCM(self.db_name) as db:
             try:
                 db.execute("""
                     INSERT INTO Posts (userid, content, created_at) VALUES (?, ?, ?)
@@ -65,7 +65,7 @@ class DBService:
     def add_follow(self, follower, followee):
         if follower == followee:
             abort(400, "You can't follow yourself")
-        with Database(self.db_name) as db:
+        with DatabaseCM(self.db_name) as db:
             try:
                 db.execute("""
                     INSERT INTO Follows (follower, followee) VALUES (?, ?)
@@ -75,7 +75,7 @@ class DBService:
         return f'Added {follower} as a follower to {followee}'
 
     def get_timeline(self, userid):
-        with Database(self.db_name) as db:
+        with DatabaseCM(self.db_name) as db:
             db.execute("""
                 SELECT * FROM Posts p
                 LEFT JOIN Follows f
@@ -86,7 +86,7 @@ class DBService:
         return response
 
     def delete_post(self, userid, postid):
-        with Database(self.db_name) as db:
+        with DatabaseCM(self.db_name) as db:
             # Check if there's a post that matches the userid & postid
             db.execute("""
                 SELECT * FROM Posts

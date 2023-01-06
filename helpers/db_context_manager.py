@@ -2,7 +2,7 @@
 # https://stackoverflow.com/questions/38076220/python-mysqldb-connection-in-a-class
 import sqlite3
 
-class Database:
+class DatabaseCM:
     def __init__(self, name):
         self._conn = sqlite3.connect(name)
         # Added this to parse all results as a list of dictionaries instead of tuples -opera22

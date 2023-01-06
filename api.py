@@ -44,7 +44,7 @@ def create_post(userid):
         else:
             return jsonify(status=400, message='Invalid POST body')
     elif request.method == 'DELETE':
-        postid = request.args.get("postid", None)
+        postid = request.args.get("id", None)
         if postid != None:
             response = db_service.delete_post(userid, postid)
             return jsonify(status=200, message=response)
