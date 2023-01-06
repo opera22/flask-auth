@@ -6,6 +6,9 @@ from helpers.Database import Database
 from helpers.exceptions import *
 from flask import abort
 from datetime import datetime
+import time
+
+TOKEN_TTL_IN_SECONDS = 3600
 
 class DBService:
     def __init__(self, db_name):
@@ -30,15 +33,19 @@ class DBService:
                 SELECT * FROM Users WHERE username = ?
             """, (username,))
             response = db.fetchall()
-        fetched_password = response[0][2]
-        fetched_userid = response[0][0]
-        fetched_username = response[0][1]
+        fetched_password = response[0]['password']
+        fetched_userid = response[0]['userid']
+        fetched_username = response[0]['username']
         # NOTE: bcrypt parses the salt on its own; no need to pass it in to .checkpw
         # fetched_salt = response[0][3]
         password_is_valid = bcrypt.checkpw(password.encode('ascii'), fetched_password)
         
         if password_is_valid:
-            encoded_jwt = jwt.encode({"userid": fetched_userid}, os.environ.get("JWT_SIGNING_KEY"), algorithm="HS256")
+            encoded_jwt = jwt.encode({
+                "sub": fetched_userid,
+                "iat": int(time.time()),
+                "exp": int(time.time() + TOKEN_TTL_IN_SECONDS)
+                }, os.environ.get("JWT_SIGNING_KEY"), algorithm="HS256")
         else:
             abort(401, 'Wrong password')
     
@@ -79,6 +86,26 @@ class DBService:
             """, (userid,))
             response = db.fetchall()
         return response
+
+    def delete_post(self, userid, postid):
+        with Database(self.db_name) as db:
+            # Check if there's a post that matches the userid & postid
+            db.execute("""
+                SELECT * FROM Posts
+                WHERE userid = ? AND postid = ?
+            """, (userid, postid))
+            response = db.fetchall()
+            if len(response) == 0:
+                abort(403, 'Unauthorized')
+            # Is this line necessary? It assumes the primary key may fail at some point
+            elif len(response) > 1:
+                abort(500, 'Duplicate posts')
+
+            db.execute("""
+                DELETE FROM Posts
+                WHERE userid = ? AND postid = ?
+            """, (userid, postid))
+        return f'Deleted post {postid}'
 
     def get_post(self, postid):
         pass

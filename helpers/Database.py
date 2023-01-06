@@ -5,7 +5,9 @@ import sqlite3
 class Database:
     def __init__(self, name):
         self._conn = sqlite3.connect(name)
-        # I added this to enforce FK constraints upon connection -opera22
+        # Added this to parse all results as a list of dictionaries instead of tuples -opera22
+        self._conn.row_factory = self.dict_factory
+        # Added this to enforce FK constraints upon connection -opera22
         self._conn.execute('PRAGMA foreign_keys = ON')
         self._cursor = self._conn.cursor()
 
@@ -36,3 +38,11 @@ class Database:
 
     def fetchall(self):
         return self.cursor.fetchall()
+    
+    # From sqlite3 docs
+    # https://docs.python.org/2/library/sqlite3.html#sqlite3.Connection.row_factory
+    def dict_factory(self, cursor, row):
+        d = {}
+        for idx, col in enumerate(cursor.description):
+            d[col[0]] = row[idx]
+        return d

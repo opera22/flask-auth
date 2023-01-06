@@ -33,23 +33,25 @@ def login():
     else:
         return jsonify(status=400, message='Invalid POST body')
 
-@app.route('/logout', methods=['GET'])
-def logout():
-    pass
-
-@app.route('/post', methods=['POST'])
+@app.route('/post', methods=['POST', 'DELETE'])
 @token_required
 def create_post(userid):
-    data = request.json
-    if data != None and 'content' in data:
-        response = db_service.create_post(userid, data['content'])
-        return jsonify(status=200, message=response)
+    if request.method == 'POST':
+        data = request.json
+        if data != None and 'content' in data:
+            response = db_service.create_post(userid, data['content'])
+            return jsonify(status=200, message=response)
+        else:
+            return jsonify(status=400, message='Invalid POST body')
+    elif request.method == 'DELETE':
+        postid = request.args.get("postid", None)
+        if postid != None:
+            response = db_service.delete_post(userid, postid)
+            return jsonify(status=200, message=response)
+        else:
+            return jsonify(status=400, message='Invalid DELETE body')
     else:
-        return jsonify(status=400, message='Invalid POST body')
-
-@app.route('/post', methods=['GET'])
-def get_post():
-    pass
+        abort(500, 'Invalid HTTP method')
 
 @app.route('/follow', methods=['POST'])
 @token_required
@@ -71,13 +73,25 @@ def get_timeline(userid):
 def get_posts_by_user():
     pass
 
-@app.errorhandler(401)
-def custom401(error):
-    return jsonify(status=401, message=error.description)
+@app.route('/post', methods=['GET'])
+def get_post():
+    pass
 
 @app.errorhandler(400)
 def custom400(error):
     return jsonify(status=400, message=error.description)
+
+@app.errorhandler(401)
+def custom401(error):
+    return jsonify(status=401, message=error.description)
+
+@app.errorhandler(403)
+def custom403(error):
+    return jsonify(status=403, message=error.description)
+
+@app.errorhandler(500)
+def custom500(error):
+    return jsonify(status=500, message=error.description)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)

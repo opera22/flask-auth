@@ -14,7 +14,10 @@ def token_required(f):
         data = request.headers['Authorization']
         token = str.replace(data, 'Bearer ', '')
         try:
-            userid = jwt.decode(token, os.environ.get("JWT_SIGNING_KEY"), algorithms=['HS256'])['userid']
+            # Symmetric encryption algorithm HS256; RS256 asym is also common
+            userid = jwt.decode(token, os.environ.get("JWT_SIGNING_KEY"), algorithms=['HS256'])['sub']
+        except jwt.exceptions.ExpiredSignatureError:
+            abort(401, 'Expired token')
         except:
             abort(401, 'Invalid token')
         return f(userid, *args, *kwargs)
