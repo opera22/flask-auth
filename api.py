@@ -29,7 +29,7 @@ def login():
     data = request.json
     if data != None and 'username' in data and 'password' in data:
         response = db_service.login(data['username'], data['password'])
-        return jsonify(status=200, message=response)
+        return jsonify(status=200, token=response)
     else:
         return jsonify(status=400, message='Invalid POST body')
 

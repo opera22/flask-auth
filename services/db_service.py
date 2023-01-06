@@ -49,9 +49,7 @@ class DBService:
         else:
             abort(401, 'Wrong password')
     
-        return {
-            "token": encoded_jwt
-        }
+        return encoded_jwt
 
     def create_post(self, userid, content):
         created_at = datetime.utcnow()
