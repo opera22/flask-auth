@@ -11,6 +11,7 @@ This project is a full implementation of token-based authentication for Flask--e
 
 ## *Auth Flow*
 ![](images/jwt_flow.png)
+
 *Credit: [Mark Macneil](https://fullstackmark.com/post/19/jwt-authentication-flow-with-refresh-tokens-in-aspnet-core-web-api)*
 
 ## *Getting a Token*
